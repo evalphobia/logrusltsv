@@ -10,11 +10,25 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-type (
-	Formatter struct{}
+type Formatter struct {
+	ignoreKeys map[string]struct{}
+	filters    map[string]func(interface{}) interface{}
+}
 
-	byKey [][2]string
-)
+func New() *Formatter {
+	return &Formatter{
+		ignoreKeys: make(map[string]struct{}),
+		filters:    make(map[string]func(interface{}) interface{}),
+	}
+}
+
+func (f *Formatter) AddIgnore(key string) {
+	f.ignoreKeys[key] = struct{}{}
+}
+
+func (f *Formatter) AddFilter(key string, fn func(interface{}) interface{}) {
+	f.filters[key] = fn
+}
 
 func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	commonItems := [][2]string{
@@ -25,6 +39,12 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	items := [][2]string{}
 	for k, v := range entry.Data {
+		if _, ok := f.ignoreKeys[k]; ok {
+			continue
+		}
+		if filter, ok := f.filters[k]; ok {
+			v = filter(v)
+		}
 		if k == "time" || k == "msg" || k == "level" {
 			k = "field." + k
 		}
@@ -34,6 +54,8 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	return encodeLTSV(append(commonItems, items...)), nil
 }
+
+type byKey [][2]string
 
 func (items byKey) Len() int           { return len(items) }
 func (items byKey) Less(i, j int) bool { return items[i][0] < items[j][0] }
