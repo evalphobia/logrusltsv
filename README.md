@@ -1,12 +1,12 @@
 # logrus-ltsv
-[LTSV](http://ltsv.org/) Formatter for [Logrus(github.com/Sirupsen/logrus)](https://github.com/Sirupsen/logrus)
+[LTSV](http://ltsv.org/) Formatter for [Logrus(github.com/sirupsen/logrus)](https://github.com/sirupsen/logrus)
 
 # Usage
 ```go
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/doloopwhile/logrusltsv"
 )
 
